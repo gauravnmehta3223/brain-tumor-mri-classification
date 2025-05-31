@@ -30,7 +30,7 @@ Brain_Tumor_Detection/
 ## Setup Instructions
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/Brain_Tumor_Detection.git
+git clone https://github.com/Gmehta604/Brain_Tumor_Detection.git
 cd Brain_Tumor_Detection
 ```
 
