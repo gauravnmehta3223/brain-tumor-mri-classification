@@ -45,8 +45,8 @@ The notebook was written for Google Colab with the data on Google Drive.
 To run it locally instead:
 
 ```bash
-git clone https://github.com/Gmehta604/Brain_Tumor_Detection-.git
-cd Brain_Tumor_Detection-
+git clone https://github.com/gauravnmehta3223/brain-tumor-mri-classification.git
+cd brain-tumor-mri-classification
 pip install -r requirements.txt
 jupyter notebook Notebook/Brain_Tumor_Detection.ipynb
 ```
