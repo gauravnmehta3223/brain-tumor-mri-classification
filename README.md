@@ -1,76 +1,65 @@
-# Brain Tumor Detection Using Deep Learning
+# Brain Tumor Classification from MRI
 
-## Overview
-This project implements a deep learning-based solution for brain tumor detection from MRI scans. The system uses advanced computer vision and deep learning techniques to analyze medical images and classify them as either containing a tumor or being tumor-free.
-
-## Features
-- Deep learning-based brain tumor detection
-- MRI scan analysis
-- High accuracy classification
-- User-friendly interface
-- Support for various image formats
-
-## Project Structure
-```
-Brain_Tumor_Detection/
-├── Dataset/           # Contains the MRI scan dataset
-├── Notebook/         # Jupyter notebooks for model development and analysis
-└── Brain Tumor Detection Using Deep Learning.pdf  # Project documentation
-```
-
-## Requirements
-- Python 3.x
-- TensorFlow/Keras
-- OpenCV
-- NumPy
-- Pandas
-- Matplotlib
-- scikit-learn
-
-## Setup Instructions
-1. Clone the repository:
-```bash
-git clone https://github.com/Gmehta604/Brain_Tumor_Detection.git
-cd Brain_Tumor_Detection
-```
-
-2. Install the required dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-3. Download the dataset and place it in the Dataset directory
-
-4. Run the Jupyter notebooks in the Notebook directory to train and test the model
-
-## Usage
-1. Open the Jupyter notebooks in the Notebook directory
-2. Follow the instructions in the notebooks to:
-   - Preprocess the MRI images
-   - Train the deep learning model
-   - Evaluate the model performance
-   - Make predictions on new images
-
-## Model Architecture
-The project uses a Convolutional Neural Network (CNN) architecture specifically designed for medical image analysis. The model includes:
-- Multiple convolutional layers
-- Pooling layers
-- Dropout layers for regularization
-- Dense layers for classification
+This project classifies brain MRI scans into **four classes**: glioma, meningioma, pituitary tumor and no tumor. It compares a small CNN built from scratch with a fine-tuned **EfficientNetB3** (transfer learning from ImageNet).
 
 ## Results
-The model achieves high accuracy in detecting brain tumors from MRI scans. Detailed performance metrics and results can be found in the project documentation.
 
-## Contributing
-Contributions are welcome! Please feel free to submit a Pull Request.
+| Model | Validation accuracy (263 held-out images) |
+| --- | --- |
+| Fine-tuned EfficientNetB3 | **91.6%** |
 
-## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+The baseline CNN reached 79.9% on the test split, but that number has the same overlap problem described below.
 
-## Acknowledgments
-- Dataset providers
-- Research papers and resources that inspired this project
-- Open-source community for various tools and libraries used
+> **Evaluation note:** the notebook trains on a split of the `Testing` folder and then reports test accuracy on the whole `Testing` folder. The test images therefore include the training images. Because of this, the 98.2% test accuracy in the notebook output is not an independent result. The validation accuracy above is the reliable figure, because those images were held out of training. The fix is to train on `Dataset/Training` (5,712 images) and test on `Dataset/Testing` (1,311 images).
 
-## Contact
-For any questions or suggestions, please open an issue in the repository. 
+## Approach
+
+1. **Data:** images are resized to 224 × 224 RGB. Class weights balance the four classes.
+2. **Baseline:** a 3-block CNN (Conv2D → MaxPool → BatchNorm) trained for 15 epochs.
+3. **Final model:** EfficientNetB3 with ImageNet weights.
+   - The first 300 layers are frozen and the rest are fine-tuned.
+   - A new head is added: BatchNorm → Dense(256, L2) → Dropout(0.4) → softmax.
+   - Trained with the Adamax optimizer, plus a custom callback that lowers the learning rate and stops early when validation loss stops improving.
+4. **Evaluation:** accuracy, a classification report for each class, and a confusion matrix.
+
+## Dataset
+
+This project uses the [Brain Tumor MRI Dataset](https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset) by Masoud Nickparvar on Kaggle. Check the dataset page for its license and original sources before reusing the images.
+
+| Class | Training | Testing |
+| --- | --- | --- |
+| glioma | 1,321 | 300 |
+| meningioma | 1,339 | 306 |
+| no tumor | 1,595 | 405 |
+| pituitary | 1,457 | 300 |
+
+## Run it
+
+The notebook was written for Google Colab with the data on Google Drive.
+
+1. Open `Notebook/Brain_Tumor_Detection.ipynb` in Colab and choose a GPU runtime.
+2. Upload the `Dataset` folder to your Drive, or download the dataset from Kaggle.
+3. In the "Get Dataframes" cell, set `train_dir` to the `Training` folder and `test_dir` to the `Testing` folder.
+4. Run all cells.
+
+To run it locally instead:
+
+```bash
+git clone https://github.com/Gmehta604/Brain_Tumor_Detection-.git
+cd Brain_Tumor_Detection-
+pip install -r requirements.txt
+jupyter notebook Notebook/Brain_Tumor_Detection.ipynb
+```
+
+Then skip the Google Drive cell and point the paths at `Dataset/Training` and `Dataset/Testing`.
+
+## Repository contents
+
+- `Notebook/Brain_Tumor_Detection.ipynb`: exploratory analysis, baseline CNN, EfficientNetB3 training and evaluation
+- `Dataset/`: the MRI images in `Training/` and `Testing/` folders
+- `Brain Tumor Detection Using Deep Learning.pdf`: the project report
+
+## Limitations
+
+- This is a course project, not a medical device. It is not validated for clinical use.
+- All results come from a single dataset with one training run.
